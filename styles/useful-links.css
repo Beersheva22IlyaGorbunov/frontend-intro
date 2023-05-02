@@ -1,0 +1,13 @@
+.link {
+  display: inline;
+}
+
+.link {
+  display: block;
+  padding: 0.2em;
+  text-decoration: none;
+}
+
+.link-img {
+  width: 0.9em;
+}
