@@ -1,0 +1,43 @@
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+.board {
+  border: 0.1px solid black;
+  min-height: 10px;
+  max-height: 10px;
+  min-width: 10px;
+  max-width: 10px;
+  transition: 1s all;
+}
+
+.board:hover {
+  border: 5px solid black;
+  min-height: 500px;
+  max-height: 500px;
+  min-width: 500px;
+  max-width: 500px
+}
+
+.line {
+  display: flex;
+  flex-direction: row;
+  height: 12.5%;
+}
+
+.line > div {
+  width: 12.5%;
+}
+
+.white {
+  background-color: white;
+}
+
+.black {
+  background-color: black;
+}
