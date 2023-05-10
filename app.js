@@ -22,56 +22,53 @@ function getSymbol(number) {
 // console.log((-160.3).toString(16))
 // console.log(myToStringInt(-160.3, 16))
 
-function myParseInt(string, radix) {
-  if (radix < 2 || radix > 36) {
-    return NaN
-  }
+function myParseInt(string, redix) {
+  string = string.toLowerCase().trim()
 
   let isNegative = false
   if (string.charAt(0) == '-') {
     isNegative = true
     string = string.substring(1)
   }
-  
-  string = string.toLowerCase()
 
-  const result = isNegative ? -calculateResult(string, radix) : calculateResult(string, radix)
+  if (redix === undefined) {
+    redix = getRedix(string)
+  }
+
+  if (redix < 2 || redix > 36) {
+    return NaN
+  }
+
+  if (redix === 16 && string.substring(0,2) === '0x') {
+    string = string.substring(2)
+  }
+
+  const result = isNegative ? -calculateResult(string, redix) : calculateResult(string, redix)
   return result
 }
 
-function calculateResult(string, radix) {
+function calculateResult(string, redix) {
   let result = 0
-  let inRadix = true
   let i = 0
-  while (inRadix && i < string.length) {
-    const current = getNumber(string.charAt(i), radix)
-    if (!isNaN(current)) {
-      result = result * radix + current
+  let current
+  while (i < string.length && !isNaN(current = getNumber(string.charAt(i), redix))) {
+      result = result * redix + current
       i++
-    } else {
-      inRadix = false
-    }
   }
   return i > 0 ? result : NaN
 }
 
-function getNumber(string, radix) {
-  const ASCII_A = 'a'.charCodeAt(0)
-  const LETTERS_PART_LENGTH = radix - 10
-  const ASCII_LAST_CHAR = String.fromCharCode(ASCII_A + LETTERS_PART_LENGTH).charCodeAt(0)
-  let digit = NaN
-
-  if (string >= 0 && string < radix) {
-    digit = +string
-  } else {
-    if (ASCII_A <= string.charCodeAt(0) && string.charCodeAt(0) <= ASCII_LAST_CHAR) {
-      digit = string.charCodeAt(0) - ASCII_A + 10
-    }
-  }
-  return digit
+function getNumber(string, redix) {
+  const ASCII_A = 'a'.charCodeAt(0) - 10
+  const symbol = string.charAt(0)
+  const digit = symbol >= '0' && symbol <= '9' ? +symbol : symbol.charCodeAt(0) - ASCII_A
+  return digit >= 0 && digit < redix ? digit : NaN
 }
 
-console.log(myParseInt('--123213A', 25))
-console.log(myParseInt('-123213AV123', 25))
+function getRedix(string) {
+  return string.startsWith('0x') ? 16 : 10
+}
 
-console.log(parseInt('-123213AV123', 25))
+console.log(myParseInt('-10'))
+
+console.log(null === 0)
