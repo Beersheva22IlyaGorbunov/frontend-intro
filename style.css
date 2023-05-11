@@ -1,0 +1,19 @@
+.list {
+  list-style: none;
+ 
+}
+
+.square {
+  height: 30px;
+  width: 30px;
+  border: 1px solid black;
+  margin: 0 auto;
+}
+
+.white {
+  background-color: white;
+}
+
+.black {
+  background-color: black;
+}

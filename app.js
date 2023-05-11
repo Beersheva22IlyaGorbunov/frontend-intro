@@ -1,74 +1,41 @@
-function myToStringInt(number, radix) {
-  const sign = number < 0 ? '-' : ''
-  number = Math.abs(number)
-  number = Math.round(number)
-
-
-  let result = ''
-
-  do {
-    result = getSymbol(number % radix) + result
-    number = Math.trunc(number / radix)
-  } while (number > 0)
-
-  return sign + result
+function getRandomInt(min, max, minInclusive = true, maxInclusive = false) {
+  max = maxInclusive ? Math.floor(max) + 1 : Math.floor(max)
+  min = minInclusive ? Math.ceil(min) : Math.ceil(min) + 1
+  return min > max ? NaN : Math.floor(Math.random() * (max - min) + min)
 }
 
-function getSymbol(number) {
-  const ASCII_DELTA = 'a'.charCodeAt(0) - 10
-  return number < 10 ? number : String.fromCharCode(number + ASCII_DELTA)
+function getArrayRandomInt(nNumbers, min, max, minInclusive = true, maxInclusive = false) {
+  const arr = []
+  arr.length = nNumbers
+  return [...arr].map(() => getRandomInt(min, max, minInclusive, maxInclusive))
 }
 
-// console.log((-160.3).toString(16))
-// console.log(myToStringInt(-160.3, 16))
+// console.log(getArrayRandomInt(100, 0, 1, true, true))
 
-function myParseInt(string, redix) {
-  string = string.toLowerCase().trim()
-
-  let isNegative = false
-  if (string.charAt(0) == '-') {
-    isNegative = true
-    string = string.substring(1)
-  }
-
-  if (redix === undefined) {
-    redix = getRedix(string)
-  }
-
-  if (redix < 2 || redix > 36) {
-    return NaN
-  }
-
-  if (redix === 16 && string.substring(0,2) === '0x') {
-    string = string.substring(2)
-  }
-
-  const result = isNegative ? -calculateResult(string, redix) : calculateResult(string, redix)
-  return result
+function getOrderedList(arr) {
+  return `<ol>${getListItems(arr)}</ol>`
 }
 
-function calculateResult(string, redix) {
-  let result = 0
-  let i = 0
-  let current
-  while (i < string.length && !isNaN(current = getNumber(string.charAt(i), redix))) {
-      result = result * redix + current
-      i++
-  }
-  return i > 0 ? result : NaN
+function getListItems(arr) {
+  return arr.map((content) => `<li>${content}</li>`).join('')
 }
 
-function getNumber(string, redix) {
-  const ASCII_A = 'a'.charCodeAt(0) - 10
-  const symbol = string.charAt(0)
-  const digit = symbol >= '0' && symbol <= '9' ? +symbol : symbol.charCodeAt(0) - ASCII_A
-  return digit >= 0 && digit < redix ? digit : NaN
+const randBinaryArr = getArrayRandomInt(10, 0, 1, true, true)
+
+function getColouredList(arr) {
+  return `<ol class="list">${getColouredItems(arr)}</ol>`
 }
 
-function getRedix(string) {
-  return string.startsWith('0x') ? 16 : 10
+function getColouredItems(arr) {
+  return arr.map((num) => `<li class="square ${num === 0 ? 'black' : 'white'}"></li>`).join('')
 }
 
-console.log(myParseInt('-10'))
+// bodyId.innerHTML = getColouredList(randBinaryArr)
 
-console.log(null === 0)
+function getMatrixRandomInt(rows, columns, min, max, minInclusive = true, maxInclusive = false) {
+  const result = []
+  result.length = rows
+  return [...result].map(() => getArrayRandomInt(columns, min, max, minInclusive, maxInclusive ))
+}
+
+console.log(getMatrixRandomInt(3, 5, 0, 1, true, true))
