@@ -1,72 +1,180 @@
 // Configuration
-const N_MOVES = 3
+const DEFAULT_WORDS = ['apple', 'digit', 'class', 'order', 'mango']
+const N_MOVES = 6
+const N_LETTERS = 5
+const a_CODE = 'a'.charCodeAt(0)
+const z_CODE = 'z'.charCodeAt(0)
+
+// API
+async function getWord() {
+  const API_URL = 'https://raw.githubusercontent.com/tabatkins/wordle-list/main/words'
+  const textResponse = await fetch(API_URL)
+  const textList = await textResponse.text()
+  const wordList = textList.split('\n')
+  const word = wordList[getRandomIndex(wordList)]
+  return word
+}
 
 // Elements
+const wordsContainer = document.getElementById('words-container-id')
 const colorInput = document.getElementById('color-input-id')
-const chooseBtn = document.getElementById('choose-color-btn-id')
-const restartBtn = document.getElementById('restart-btn-id')
-const colorBox = document.getElementById('color-box-id')
+const restartGameBtn = document.getElementById('restart-btn-id')
 const finishText = document.getElementById('finish-text-id')
-const css = document.querySelector(':root')
+const inputLetters = document.querySelectorAll('.letter')
+const cssRoot = document.querySelector(':root')
 
 // Global variables
-let moveCount = 0
+let moves = []
+let gameWord = ''
+let currentLetters = []
 
 // Initial state
 startGame()
 
 // Functions
 function game() {
-  const nextColor = colorInput.value
-  setColor(nextColor)
-  moveCount++
-  colorInput.value = ''
-  restartBtn.innerHTML = `${N_MOVES - moveCount} attempts left`
-  if (moveCount === N_MOVES) {
-    finish()
+  const word = currentLetters
+  if (word.length != 5) {
+    alert('Sorry, your word\'s length should equal to 5')
+  } else if (moves.includes(word)) {
+    alert('Sorry, this word is alredy used')
+  } else {
+    clearLetters()
+    if (moves.length == 0) {
+      wordsContainer.style.display = 'flex'
+    }
+    processWord(word)
   }
 }
 
-function startGame() {
-  moveCount = 0
-  css.style.setProperty('--main-color', 'gray')
-  finishText.innerHTML = ''
+function clearLetters() {
+  currentLetters = []
+  inputLetters.forEach((input) => input.value = '')
+}
+
+function processWord(word) {
+  buildNewWord(word)
+  moves.push(word)
+  console.log(word, gameWord)
+  if (word.join('') == gameWord) {
+    win()
+  } else if (moves.length === N_MOVES) {
+    lose()
+  } else {
+    inputLetters[0].focus()
+  }
+}
+
+async function startGame() {
+  currentLetters = []
+  wordsContainer.innerHTML = ''
+  wordsContainer.style.display = 'none'
+  restartGameBtn.hidden = true
   finishText.hidden = true
-  restartBtn.innerHTML = `${N_MOVES - moveCount} attempts left`
-  chooseBtn.disabled = false
-  colorInput.disabled = false
+
+  getWord()
+    .then((word) => gameWord = word)
+    .catch(() => gameWord = DEFAULT_WORDS[getRandomIndex(DEFAULT_WORDS)])
+
+  moves = []
 }
 
 function finish() {
-  restartBtn.innerHTML = 'Press to restart'
-  finishText.innerHTML = 'Congratulation, game is over'
-  chooseBtn.disabled = true
-  colorInput.disabled = true
+  restartGameBtn.innerHTML = 'Press to restart'
+  restartGameBtn.hidden = false
+  finishText.hidden = false
 }
 
-function setColor(color) {
-  if (!isColor(color)) {
-    css.style.setProperty('--main-color', 'gray')
-  } else {
-    css.style.setProperty('--main-color', color)
-  }
+function win() {
+  finishText.innerHTML = 'Congratulation, you are winner'
+  finish()
 }
 
-function isColor(strColor){
-  var s = new Option().style;
-  s.color = strColor;
-  console.log(strColor, s.color)
-  return s.color !== '';
+function lose() {
+  finishText.innerHTML = `Sorry, game is over. Answer: ${gameWord.toUpperCase()}`
+  finish()
+}
+
+function buildNewWord(word) {
+  const boxColors = getColors(word)
+  const newWord = document.createElement('div')
+  newWord.className = 'answered-word'
+  boxColors.forEach((color, index) => {
+    const letter = buildLetterBox(word[index], color)
+    newWord.appendChild(letter)
+  })
+  wordsContainer.appendChild(newWord)
+}
+
+function getColors(word) {
+  return word.map((letter, index) => {
+    if (gameWord[index] == letter) {
+      return 'green'
+    } else if (gameWord.includes(letter)) {
+      return 'rgb(150, 150, 33)'
+    } else {
+      return 'gray'
+    }
+  })
+}
+
+function buildLetterBox(letter, color) {
+  const newLetterBox = document.createElement('div')
+  newLetterBox.style.backgroundColor = color
+  newLetterBox.innerHTML = letter
+  return newLetterBox
 }
 
 // Listeners
-chooseBtn.addEventListener('click', game)
-restartBtn.addEventListener('click', startGame)
-colorInput.addEventListener('keypress', handleKeyPress)
+restartGameBtn.addEventListener('click', startGame)
+inputLetters.forEach((inputLetter) => inputLetter.addEventListener('keydown', handleKeyPress))
+colorInput.addEventListener('change', handleThemeColorChange)
 
 // Handlers
 function handleKeyPress(event) {
-  if (event.key.toLowerCase() == 'enter') {
-    game()
+  event.preventDefault()
+  const inputIndex = +event.target.dataset.pos
+  switch (event.key.toLowerCase()) {
+    case 'enter': return handlePressEnter()
+    case 'backspace': return handlePressBackspace(event, inputIndex)
+    default: return handlePressCommonKey(event, inputIndex)
   }
+}
+
+function handlePressEnter() {
+  game()
+}
+
+function handlePressBackspace(event, inputIndex) {
+  if (event.target.value == '' && inputIndex > 0) {
+    inputLetters[inputIndex - 1].value = ''
+    inputLetters[inputIndex - 1].focus()
+  } else {
+    event.target.value = ''
+    currentLetters[inputIndex] = ''
+  }
+}
+
+function handlePressCommonKey(event, inputIndex) {
+  if (isLetter(event.key.toLowerCase())) {
+    event.target.value = event.key
+    if (inputIndex < N_LETTERS - 1) {
+      inputLetters[inputIndex + 1].focus()
+    }
+    currentLetters[inputIndex] = event.key
+  }
+}
+
+function handleThemeColorChange(event) {
+  cssRoot.style.setProperty('--main-color', event.target.value)
+}
+
+// Helpers
+function isLetter(letter) {
+  const code = letter.charCodeAt(0)
+  return letter.length == 1 && code >= a_CODE && code <= z_CODE
+}
+
+function getRandomIndex(arr) {
+  return Math.floor(Math.random() * arr.length)
 }
