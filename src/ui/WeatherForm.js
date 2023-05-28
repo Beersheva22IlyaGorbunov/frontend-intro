@@ -25,7 +25,6 @@ export default class WeatherForm {
   #maxDays;
   #cities;
   #parentId;
-  #submitPromiseResolve;
 
   constructor(parentId, cities, maxDays) {
     this.#parentId = parentId; 
@@ -38,8 +37,8 @@ export default class WeatherForm {
     this.#setHandlers();
   }
 
-  async submitForm(res) {
-    this.#submitPromiseResolve = res;
+  async submitForm() {
+    return new Promise(this.#submitPromiseResolve);
   }
 
   #buildForm() {
@@ -94,8 +93,12 @@ export default class WeatherForm {
     this.#formElement.onsubmit = (event) => {
       event.preventDefault();
       console.log(this.#formData);
-      this.#submitPromiseResolve(this.#formData)
+      this.#submitPromiseResolve()
     };
+  }
+
+  #submitPromiseResolve() {
+    return this.#formData;
   }
 
   #setElements() {
