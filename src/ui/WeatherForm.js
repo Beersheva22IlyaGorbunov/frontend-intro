@@ -1,4 +1,8 @@
-import { getIsoDateStr, getEndDate } from "../util/date-functions.js";
+import {
+  getISODateStr,
+  getEndDate,
+  daysBetween,
+} from "../util/date-functions.js";
 import { range } from "../util/number-functions.js";
 
 // Constants
@@ -25,20 +29,19 @@ export default class WeatherForm {
   #maxDays;
   #cities;
   #parentId;
+  #resolveFormSubmitPromise;
+  #geoCodingService;
 
-  constructor(parentId, cities, maxDays) {
-    this.#parentId = parentId; 
+  constructor(parentId, cities, maxDays, geoCodingService) {
+    this.#parentId = parentId;
     this.#cities = cities;
     this.#maxDays = maxDays;
     this.#formData = {};
+    this.#geoCodingService = geoCodingService
     this.#buildForm();
     this.#setElements();
     this.#setSelectOptions();
     this.#setHandlers();
-  }
-
-  async submitForm() {
-    return new Promise(this.#submitPromiseResolve);
   }
 
   #buildForm() {
@@ -54,14 +57,23 @@ export default class WeatherForm {
           <select id="${this.#parentId}-${HOUR_TO_ID}" required></select>
         </div>
         <div class="date-group">
-          <label for="${this.#parentId}-${DATE_ID}" class="date-group_label">Enter start date</label>
-          <input type="date" id="${this.#parentId}-${DATE_ID}" class="date-group_input" required />
+          <label for="${
+            this.#parentId
+          }-${DATE_ID}" class="date-group_label">Enter start date</label>
+          <input type="date" id="${
+            this.#parentId
+          }-${DATE_ID}" class="date-group_input" required />
         </div>
+        <input onchange=""></input>
         <div class="buttons-group">
           <button type="submit" class="buttons-submit">Submit</button>
         </div>
       </form>
     `;
+  }
+
+  async getFormData() {
+    return new Promise((res) => (this.#resolveFormSubmitPromise = res));
   }
 
   #cityHandler() {
@@ -70,18 +82,47 @@ export default class WeatherForm {
 
   #dateHandler() {
     this.#formData.startDate = this.#dateElement.value;
+
+    const skippedDays = daysBetween(
+      getISODateStr(new Date()),
+      new Date(this.#formData.startDate)
+    );
+    setOptionItems(
+      this.#daysElement,
+      range(1, this.#maxDays + 1 - skippedDays),
+      DAYS_SELECT_PLACEHOLDER,
+      this.#formData.days
+    );
   }
 
   #daysHandler() {
     this.#formData.days = this.#daysElement.value;
+    this.#dateElement.max = getEndDate(
+      new Date(),
+      this.#maxDays + 1 - this.#formData.days
+    );
   }
 
   #hourFromHandler() {
-    this.#formData.hourFrom = this.#hourFromElement.value;
+    const newValue = this.#hourFromElement.value;
+    this.#formData.hourFrom = newValue;
+    setOptionItems(
+      this.#hourToElement,
+      range(+newValue, 24),
+      HOUR_TO_SELECT_PLACEHOLDER,
+      this.#formData.hourTo
+    );
   }
 
   #hourToHandler() {
-    this.#formData.hourTo = this.#hourToElement.value;
+    const newValue = this.#hourToElement.value;
+    this.#formData.hourTo = newValue;
+    setOptionItems(
+      this.#hourFromElement,
+      range(0, +newValue + 1),
+      HOUR_FROM_SELECT_PLACEHOLDER,
+      this.#formData.hourFrom
+    );
   }
 
   #setHandlers() {
@@ -92,13 +133,8 @@ export default class WeatherForm {
     this.#hourToElement.onchange = this.#hourToHandler.bind(this);
     this.#formElement.onsubmit = (event) => {
       event.preventDefault();
-      console.log(this.#formData);
-      this.#submitPromiseResolve()
+      this.#resolveFormSubmitPromise(this.#formData);
     };
-  }
-
-  #submitPromiseResolve() {
-    return this.#formData;
   }
 
   #setElements() {
@@ -106,12 +142,16 @@ export default class WeatherForm {
     this.#cityElement = document.getElementById(`${this.#parentId}-${CITY_ID}`);
     this.#dateElement = document.getElementById(`${this.#parentId}-${DATE_ID}`);
     this.#daysElement = document.getElementById(`${this.#parentId}-${DAYS_ID}`);
-    this.#hourFromElement = document.getElementById(`${this.#parentId}-${HOUR_FROM_ID}`);
-    this.#hourToElement = document.getElementById(`${this.#parentId}-${HOUR_TO_ID}`);
+    this.#hourFromElement = document.getElementById(
+      `${this.#parentId}-${HOUR_FROM_ID}`
+    );
+    this.#hourToElement = document.getElementById(
+      `${this.#parentId}-${HOUR_TO_ID}`
+    );
   }
 
   #setSelectOptions() {
-    const minDate = getIsoDateStr(new Date);
+    const minDate = getISODateStr(new Date());
     this.#dateElement.min = minDate;
     this.#dateElement.max = getEndDate(minDate, this.#maxDays);
 
@@ -134,9 +174,13 @@ export default class WeatherForm {
   }
 }
 
-function setOptionItems(element, options, placeholder) {
-  element.innerHTML = `<option value="" hidden selected>--${placeholder}--</option>`;
+function setOptionItems(element, options, placeholder, selectedValue) {
+  element.innerHTML = `<option value="" hidden ${!selectedValue ? "selected" : ""}>--${placeholder}--</option>`;
   element.innerHTML += options
-    .map((option) => `<option value="${option}">${option}</option>`)
+    .map((option) =>
+      option == selectedValue
+        ? `<option value="${option}" selected>${option}</option>`
+        : `<option value="${option}">${option}</option>`
+    )
     .join("");
 }

@@ -69,6 +69,50 @@ body {
   background-color: rgba(95, 158, 160, 0.2);
 }
 
+#form-place-form-id {
+  margin: 0 auto;
+  width: 20rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
+  gap: .5rem;
+}
+
+#form-place-form-id div {
+  text-align: center;
+  width: 100%;
+}
+
+#form-place-form-id select, input {
+  text-align: center;
+  border: 1px solid cadetblue;
+  width: 45%;
+  border-radius: .5rem;
+  padding: .2rem;
+}
+
+#form-place-form-id select:focus, input:focus {
+  outline: 2px solid cadetblue;
+}
+
+#form-place-form-id button {
+  margin: 0 auto;
+  background-color: cadetblue;
+  border-radius: .5rem;
+  outline: none;
+  border: none;
+  padding: .5rem 3rem;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity .4s;
+}
+
+#form-place-form-id button:hover {
+  opacity: .8;
+}
+
 @media  (max-width: 720px) {
   html {
     font-size: 14px;

@@ -1,5 +1,6 @@
 {
-  "baseUrl": "https://api.open-meteo.com/v1/gfs?",
+  "weatherBaseUrl": "https://api.open-meteo.com/v1/gfs?",
+  "citiesBaseUrl": "https://geocoding-api.open-meteo.com/v1/search?",
   "maxDays": 16,
   "cities": {
     "Tel-Aviv": { "lat": 0, "long": 0 },
