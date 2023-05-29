@@ -1,7 +1,8 @@
 const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
 
-export function getISODateStr(date){
-  return date.toISOString().substring(0,10)
+export function getISODateStr(date) {
+  console.log(date)
+  return date.toISOString().substring(0, 10);
 }
 
 export function getEndDate(startDateString, days) {
@@ -13,5 +14,5 @@ export function getEndDate(startDateString, days) {
 export function daysBetween(start, end) {
   const startDay = new Date(start);
   const finishDay = new Date(end);
-  return Math.floor((finishDay - startDay) / MILLISECONDS_IN_DAY)
+  return Math.floor((finishDay - startDay) / MILLISECONDS_IN_DAY);
 }

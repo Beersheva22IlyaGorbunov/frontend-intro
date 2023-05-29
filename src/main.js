@@ -23,7 +23,6 @@ const openMeteoService = new OpenMeteoService(openMeteoConfig.weatherBaseUrl);
 const geoCodingService = new GeoCodingService(openMeteoConfig.citiesBaseUrl);
 const weatherForm = new WeatherForm(
   FORM_PLACE_ID,
-  Object.keys(openMeteoConfig.cities),
   openMeteoConfig.maxDays,
   geoCodingService
 );
@@ -33,20 +32,13 @@ async function getFormAndFetch() {
     const fromFormData = await weatherForm.getFormData();
 
     const requestParams = {
-      lat: openMeteoConfig.cities[fromFormData.city].lat,
-      long: openMeteoConfig.cities[fromFormData.city].long,
-      startDate: fromFormData.startDate,
+      ...fromFormData,
       endDate: getEndDate(fromFormData.startDate, fromFormData.days),
-      hourFrom: fromFormData.hourFrom,
-      hourTo: fromFormData.hourTo,
     };
 
-    openMeteoService
-      .getTemperatures(requestParams)
-      .then((res) => dataGrid.fillData(res));
+    const forecastData = await openMeteoService.getTemperatures(requestParams);
+    dataGrid.fillData(forecastData);
   }
 }
 
 getFormAndFetch();
-
-console.log(await geoCodingService.getCitites("Beer"));

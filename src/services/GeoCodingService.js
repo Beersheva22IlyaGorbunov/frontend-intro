@@ -19,13 +19,16 @@ export default class GeoCodingService {
     return `${this.#baseUrl}name=${name}`;
   }
 
-  async getCitites(name) {
+  async getCities(name) {
     const cities = await this.#fetchCities(name);
-    // return cities.results.map((cityObj) => ({
-    //   name: cityObj.name,
-    //   lat: cityObj.latitude,
-    //   long: cityObj.longitude
-    // }))
-    return cities.results
+    if (cities.results) {
+      return cities.results;
+    } else {
+      throw new Error(`Can't find such a city: ${name}`);
+    }
+  }
+
+  getFlagByCountryCode(countryCode) {
+    return `https://flagcdn.com/48x36/${countryCode.toLowerCase()}.png`;
   }
 }
