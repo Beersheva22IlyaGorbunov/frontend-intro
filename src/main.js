@@ -1,44 +1,103 @@
-import OpenMeteoService from "./services/OpenMeteoService.js";
-import openMeteoConfig from "./config/service-config.json" assert { type: "json" };
+import EmployeesService from "./services/EmployeesService.js";
+import ApplicationBar from "./ui/AppicationBar.js";
 import DataGrid from "./ui/DataGrid.js";
-import WeatherForm from "./ui/WeatherForm.js";
-import { getEndDate } from "./util/date-functions.js";
-import GeoCodingService from "./services/GeoCodingService.js";
+import EmployeeForm from "./ui/EmployeeForm.js";
+import serviceConfig from "./config/service-config.json" assert { "type": "json" };
+import { getStatistics, getStatisticsInArr } from "./util/statistics.js";
+import { getAgeByBirthyear } from "./util/date-functions.js";
+
+// Employee model
+// {id: number of 9 digits, name: string, birthYear: number, gender: female | male,
+// salary: number, department: QA, Development, Audit, Accounting, Management}
 
 // Constants
-const TABLE_PLACE_ID = "table-place";
-const COLUMN_NAMES = [
-  { field: "date", headerName: "Date" },
-  { field: "time", headerName: "Time" },
-  { field: "temperature", headerName: "Temperature" },
-  { field: "apparentTemperature", headerName: "Feels like" },
+// ID's
+const MENU_PLACE_ID = "menu-place";
+const EMPLOYEE_FORM_PLACE_ID = "employees-form-place";
+const EMPLOYEE_GRID_PLACE_ID = "employees-table-place";
+const STATISTICS_GRID_PLACE_ID = "statistics-place";
+const AGE_STATISTICS_PLACE_ID = "age-statistics-place";
+const SALARY_STATISTICS_PLACE_ID = "salary-statistics-place";
+
+// Settings
+const EMPLOYEE_COLUMNS = [
+  { field: "id", headerName: "ID" },
+  { field: "name", headerName: "Name" },
+  { field: "birthYear", headerName: "Birth Year" },
+  { field: "gender", headerName: "Gender" },
+  { field: "salary", headerName: "Salary (ILS)" },
+  { field: "department", headerName: "Department" },
+];
+const AGE_STATISTICS_COLUMNS = [
+  { field: "min", headerName: "Age from" },
+  { field: "max", headerName: "Age to" },
+  { field: "amount", headerName: "Amount" }
+];
+const SALARY_STATISTICS_COLUMNS = [
+  { field: "min", headerName: "Salary from" },
+  { field: "max", headerName: "Salary to" },
+  { field: "amount", headerName: "Amount" }
+];
+const SECTIONS = [
+  {
+    title: "Add employee",
+    id: "employees-form-place",
+  },
+  {
+    title: "Employees",
+    id: "employees-table-place",
+  },
+  {
+    title: "Statistics",
+    id: "statistics-place",
+  },
 ];
 
-const FORM_PLACE_ID = "form-place";
+const statisticsElement = document.getElementById(STATISTICS_GRID_PLACE_ID)
+statisticsElement.innerHTML = `
+  <div id="${AGE_STATISTICS_PLACE_ID}"></div>
+  <div id="${SALARY_STATISTICS_PLACE_ID}"></div>
+`
 
-// Objects
+const employeesService = new EmployeesService();
 
-const dataGrid = new DataGrid(TABLE_PLACE_ID, COLUMN_NAMES);
-const openMeteoService = new OpenMeteoService(openMeteoConfig.weatherBaseUrl);
-const geoCodingService = new GeoCodingService(openMeteoConfig.citiesBaseUrl);
-const weatherForm = new WeatherForm(
-  FORM_PLACE_ID,
-  openMeteoConfig.maxDays,
-  geoCodingService
-);
+const applicationBar = new ApplicationBar(MENU_PLACE_ID, SECTIONS);
+const employeesTable = new DataGrid(EMPLOYEE_GRID_PLACE_ID, EMPLOYEE_COLUMNS);
+const employeeForm = new EmployeeForm(EMPLOYEE_FORM_PLACE_ID, serviceConfig);
+const ageStatisticsTable = new DataGrid(AGE_STATISTICS_PLACE_ID, AGE_STATISTICS_COLUMNS);
+const salaryStatisticsTable = new DataGrid(SALARY_STATISTICS_PLACE_ID, SALARY_STATISTICS_COLUMNS);
 
-async function getFormAndFetch() {
+async function runAddEmployeeEvent() {
   while (true) {
-    const fromFormData = await weatherForm.getFormData();
+    const newEmployee = await employeeForm.handleAddingEmployee();
 
-    const requestParams = {
-      ...fromFormData,
-      endDate: getEndDate(fromFormData.startDate, fromFormData.days),
-    };
+    try {
+      await employeesService.add(newEmployee);
+      employeesTable.insertRow(newEmployee);
 
-    const forecastData = await openMeteoService.getTemperatures(requestParams);
-    dataGrid.fillData(forecastData);
+      const allEmployees = await employeesService.getAll();
+
+      const ageStatistics = getAgeStatistics(allEmployees)
+      ageStatisticsTable.fillData(ageStatistics)
+
+      const salaryStatistics = getSalaryStatistics(allEmployees)
+      salaryStatisticsTable.fillData(salaryStatistics)
+    } catch (e) {
+      console.log();
+    }
   }
 }
 
-getFormAndFetch();
+function getAgeStatistics(allEmployees) {
+  const employyesWithAge = allEmployees.map((empl) => ({
+    ...empl,
+    age: getAgeByBirthyear(empl.birthYear),
+  }));
+  return getStatisticsInArr(employyesWithAge, "age", 10)
+}
+
+function getSalaryStatistics(allEmployees) {
+  return getStatisticsInArr(allEmployees, "salary", 2000)
+}
+
+runAddEmployeeEvent();

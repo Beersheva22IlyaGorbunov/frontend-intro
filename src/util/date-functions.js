@@ -16,3 +16,11 @@ export function daysBetween(start, end) {
   const finishDay = new Date(end);
   return Math.floor((finishDay - startDay) / MILLISECONDS_IN_DAY);
 }
+
+export function getAgeByBirthyear(birhYear) {
+  return new Date().getFullYear() - birhYear;
+}
+
+export function getBirthyearByAge(age) {
+  return new Date().getFullYear() - age;
+}

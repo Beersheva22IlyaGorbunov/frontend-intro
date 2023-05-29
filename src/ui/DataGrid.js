@@ -1,8 +1,12 @@
+const TABLE_BODY_ID = "table-body";
+
 export default class DataGrid {
+  #parentId;
   #tBodyElement;
   #keys;
 
   constructor(parendId, columns) {
+    this.#parentId = parendId;
     this.#keys = columns.map((column) => column.field);
     this.#fillHeader(
       parendId,
@@ -11,25 +15,36 @@ export default class DataGrid {
   }
 
   fillData(rowsData) {
-    const tableBodyElement = document.getElementById(this.#tBodyElement);
-    tableBodyElement.innerHTML = rowsData.map((rowData) => `
-      <tr>
-        ${this.#fillRow(rowData)}
-      </tr>
-    `).join('')
+    this.#tBodyElement.innerHTML = rowsData
+      .map(
+        (rowData) => `
+          <tr>
+            ${this.#fillRow(rowData)}
+          </tr>
+        `
+      )
+      .join("");
+  }
+
+  insertRow(obj) {
+    this.#tBodyElement.innerHTML += this.#fillRow(obj);
   }
 
   #fillRow(rowData) {
-    return this.#keys.map((key) => `
+    return this.#keys
+      .map(
+        (key) => `
       <td>
         ${rowData[key]}
       </td>
-    `).join('');
+    `
+      )
+      .join("");
   }
 
   #fillHeader(parentId, columnNames) {
+    const tbodyId = getId(this.#parentId, TABLE_BODY_ID);
     const tableSectionElement = document.getElementById(parentId);
-    this.#tBodyElement = "table-body";
     tableSectionElement.innerHTML = `
       <table>
         <thead>
@@ -39,9 +54,14 @@ export default class DataGrid {
               .join("")}
           </tr>
         </thead>
-        <tbody id="${this.#tBodyElement}">
+        <tbody id="${tbodyId}">
         </tbody>
       </table>
     `;
+    this.#tBodyElement = document.getElementById(tbodyId);
   }
+}
+
+function getId(parentId, elementId) {
+  return `${parentId}-${elementId}`;
 }
