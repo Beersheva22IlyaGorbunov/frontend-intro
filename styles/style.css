@@ -71,6 +71,24 @@ table tbody tr:nth-child(even) {
   display: none;
 }
 
+.notification-section { 
+  position: fixed;
+  bottom: 0;
+  right: 5%;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: .5rem;
+  padding-bottom: 1rem;
+}
+
+.notification-msg {
+  border: 2px solid rgb(240, 128, 128, 1);
+  max-width: 20vw;
+  border-radius: 1rem;
+  padding: .8rem;
+  transition: all .5s;
+}
+
 
 @media  (max-width: 720px) {
   html {

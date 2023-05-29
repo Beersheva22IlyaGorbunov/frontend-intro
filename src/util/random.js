@@ -30,6 +30,10 @@ export function getRandomEmployee({
     gender: gender,
     salary: getRandomNumber(minSalary, maxSalary),
     department: getRandomElement(departments),
+    toString: function() {
+      return `id: ${this.id}, name: ${this.name}, birth year: ${this.birthYear}, 
+        gender: ${this.gender}, salary: ${this.salary}, department: ${this.department}`
+    }
   };
 }
 

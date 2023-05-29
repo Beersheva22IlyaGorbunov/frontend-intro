@@ -3,8 +3,9 @@ import ApplicationBar from "./ui/AppicationBar.js";
 import DataGrid from "./ui/DataGrid.js";
 import EmployeeForm from "./ui/EmployeeForm.js";
 import serviceConfig from "./config/service-config.json" assert { "type": "json" };
-import { getStatistics, getStatisticsInArr } from "./util/statistics.js";
+import { getStatisticsInArr } from "./util/statistics.js";
 import { getAgeByBirthyear } from "./util/date-functions.js";
+import NotificationBar from "./ui/NotificationsBar.js";
 
 // Employee model
 // {id: number of 9 digits, name: string, birthYear: number, gender: female | male,
@@ -20,6 +21,7 @@ const AGE_STATISTICS_PLACE_ID = "age-statistics-place";
 const SALARY_STATISTICS_PLACE_ID = "salary-statistics-place";
 
 // Settings
+const NOTIFICATION_DISPLAY_TIME_SECONDS = 3
 const EMPLOYEE_COLUMNS = [
   { field: "id", headerName: "ID" },
   { field: "name", headerName: "Name" },
@@ -66,13 +68,15 @@ const employeesTable = new DataGrid(EMPLOYEE_GRID_PLACE_ID, EMPLOYEE_COLUMNS);
 const employeeForm = new EmployeeForm(EMPLOYEE_FORM_PLACE_ID, serviceConfig);
 const ageStatisticsTable = new DataGrid(AGE_STATISTICS_PLACE_ID, AGE_STATISTICS_COLUMNS);
 const salaryStatisticsTable = new DataGrid(SALARY_STATISTICS_PLACE_ID, SALARY_STATISTICS_COLUMNS);
+const notificationBar = new NotificationBar(NOTIFICATION_DISPLAY_TIME_SECONDS)
 
 async function runAddEmployeeEvent() {
   while (true) {
     const newEmployee = await employeeForm.handleAddingEmployee();
 
     try {
-      await employeesService.add(newEmployee);
+      const addedEmpl = await employeesService.add(newEmployee);
+      notificationBar.displayMessage(addedEmpl.id, "Employee has been added", addedEmpl.toString())
       employeesTable.insertRow(newEmployee);
 
       const allEmployees = await employeesService.getAll();
