@@ -76,7 +76,7 @@ table tbody tr:nth-child(even) {
   bottom: 0;
   right: 5%;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   gap: .5rem;
   padding-bottom: 1rem;
 }
@@ -88,6 +88,11 @@ table tbody tr:nth-child(even) {
   padding: .8rem;
   transition: all .5s;
 }
+
+.notification-msg__hide {
+  transform: translateX(150%);
+  opacity: 0;
+} 
 
 
 @media  (max-width: 720px) {

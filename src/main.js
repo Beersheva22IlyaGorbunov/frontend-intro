@@ -2,9 +2,7 @@ import EmployeesService from "./services/EmployeesService.js";
 import ApplicationBar from "./ui/AppicationBar.js";
 import DataGrid from "./ui/DataGrid.js";
 import EmployeeForm from "./ui/EmployeeForm.js";
-import serviceConfig from "./config/service-config.json" assert { "type": "json" };
-import { getStatisticsInArr } from "./util/statistics.js";
-import { getAgeByBirthyear } from "./util/date-functions.js";
+import appConfig from "./config/app-config.json" assert { "type": "json" };
 import NotificationBar from "./ui/NotificationsBar.js";
 
 // Employee model
@@ -21,7 +19,7 @@ const AGE_STATISTICS_PLACE_ID = "age-statistics-place";
 const SALARY_STATISTICS_PLACE_ID = "salary-statistics-place";
 
 // Settings
-const NOTIFICATION_DISPLAY_TIME_SECONDS = 3
+const NOTIFICATION_DISPLAY_TIME_SECONDS = 3;
 const EMPLOYEE_COLUMNS = [
   { field: "id", headerName: "ID" },
   { field: "name", headerName: "Name" },
@@ -33,12 +31,12 @@ const EMPLOYEE_COLUMNS = [
 const AGE_STATISTICS_COLUMNS = [
   { field: "min", headerName: "Age from" },
   { field: "max", headerName: "Age to" },
-  { field: "amount", headerName: "Amount" }
+  { field: "amount", headerName: "Amount" },
 ];
 const SALARY_STATISTICS_COLUMNS = [
   { field: "min", headerName: "Salary from" },
   { field: "max", headerName: "Salary to" },
-  { field: "amount", headerName: "Amount" }
+  { field: "amount", headerName: "Amount" },
 ];
 const SECTIONS = [
   {
@@ -55,53 +53,60 @@ const SECTIONS = [
   },
 ];
 
-const statisticsElement = document.getElementById(STATISTICS_GRID_PLACE_ID)
+const statisticsElement = document.getElementById(STATISTICS_GRID_PLACE_ID);
 statisticsElement.innerHTML = `
   <div id="${AGE_STATISTICS_PLACE_ID}"></div>
   <div id="${SALARY_STATISTICS_PLACE_ID}"></div>
-`
+`;
 
-const employeesService = new EmployeesService();
+const employeesService = new EmployeesService(appConfig.minId, appConfig.maxId);
 
-const applicationBar = new ApplicationBar(MENU_PLACE_ID, SECTIONS);
+const applicationBar = new ApplicationBar(
+  MENU_PLACE_ID,
+  SECTIONS,
+  handleSectionChanging
+);
 const employeesTable = new DataGrid(EMPLOYEE_GRID_PLACE_ID, EMPLOYEE_COLUMNS);
-const employeeForm = new EmployeeForm(EMPLOYEE_FORM_PLACE_ID, serviceConfig);
-const ageStatisticsTable = new DataGrid(AGE_STATISTICS_PLACE_ID, AGE_STATISTICS_COLUMNS);
-const salaryStatisticsTable = new DataGrid(SALARY_STATISTICS_PLACE_ID, SALARY_STATISTICS_COLUMNS);
-const notificationBar = new NotificationBar(NOTIFICATION_DISPLAY_TIME_SECONDS)
+const employeeForm = new EmployeeForm(
+  EMPLOYEE_FORM_PLACE_ID,
+  appConfig.employeeProperties
+);
+const ageStatisticsTable = new DataGrid(
+  AGE_STATISTICS_PLACE_ID,
+  AGE_STATISTICS_COLUMNS
+);
+const salaryStatisticsTable = new DataGrid(
+  SALARY_STATISTICS_PLACE_ID,
+  SALARY_STATISTICS_COLUMNS
+);
+const notificationBar = new NotificationBar(NOTIFICATION_DISPLAY_TIME_SECONDS);
 
 async function runAddEmployeeEvent() {
   while (true) {
     const newEmployee = await employeeForm.handleAddingEmployee();
 
-    try {
-      const addedEmpl = await employeesService.add(newEmployee);
-      notificationBar.displayMessage(addedEmpl.id, "Employee has been added", addedEmpl.toString())
-      employeesTable.insertRow(newEmployee);
-
-      const allEmployees = await employeesService.getAll();
-
-      const ageStatistics = getAgeStatistics(allEmployees)
-      ageStatisticsTable.fillData(ageStatistics)
-
-      const salaryStatistics = getSalaryStatistics(allEmployees)
-      salaryStatisticsTable.fillData(salaryStatistics)
-    } catch (e) {
-      console.log();
-    }
+    const addedEmpl = await employeesService.add(newEmployee);
+    notificationBar.displayMessage(
+      addedEmpl.id,
+      "Employee has been added",
+      addedEmpl.toString()
+    );
+    employeesTable.insertRow(addedEmpl);
   }
 }
 
-function getAgeStatistics(allEmployees) {
-  const employyesWithAge = allEmployees.map((empl) => ({
-    ...empl,
-    age: getAgeByBirthyear(empl.birthYear),
-  }));
-  return getStatisticsInArr(employyesWithAge, "age", 10)
+function handleSectionChanging(index) {
+  if (SECTIONS[index].id == STATISTICS_GRID_PLACE_ID) {
+    updateStatistics();
+  }
 }
 
-function getSalaryStatistics(allEmployees) {
-  return getStatisticsInArr(allEmployees, "salary", 2000)
+function updateStatistics() {
+  const ageStatistics = employeesService.getStatistics("age", 10);
+  ageStatisticsTable.fillData(ageStatistics);
+
+  const salaryStatistics = employeesService.getStatistics("salary", 1000);
+  salaryStatisticsTable.fillData(salaryStatistics);
 }
 
 runAddEmployeeEvent();

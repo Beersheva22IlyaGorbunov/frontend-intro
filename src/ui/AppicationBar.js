@@ -1,15 +1,17 @@
 // Constants
-const MENU_BTN_CLASS = "menu-btn"
+const MENU_BTN_CLASS = "menu-btn";
 const ACTIVE_BTN_CLASS = "btn_active";
 
 export default class ApplicationBar {
   #buttons;
   #activeIndex;
   #sectionElements;
+  #onChangingCallback;
 
-  constructor(parentId, sections) {
+  constructor(parentId, sections, onChangingCallback) {
     //sections - array of objects
     //each object {title: string, id: string}
+    this.#onChangingCallback = onChangingCallback;
     this.#fillButtons(
       parentId,
       sections.map((s) => s.title)
@@ -32,7 +34,8 @@ export default class ApplicationBar {
 
   #addListeners() {
     Array.from(this.#buttons).forEach((button, index) => {
-      button.onclick = this.#handler.bind(this, index);
+      button.addEventListener("click", this.#handler.bind(this, index));
+      button.addEventListener("click", this.#onChangingCallback.bind(this, index));
     });
   }
 

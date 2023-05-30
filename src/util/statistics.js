@@ -1,5 +1,5 @@
 // Gets array with structure [{[field]: number, ...}, ...]
-export function getStatistics(arr, field, step) {
+export function getOccurencies(arr, field, step) {
   return arr.reduce((stat, elem) => {
     const intervalStart = Math.trunc(elem[field] / step) * step;
     return {
@@ -9,8 +9,8 @@ export function getStatistics(arr, field, step) {
   },{})
 }
 
-export function getStatisticsInArr(arr, field, step) {
-  const inObjStat = getStatistics(arr, field, step);
+export function getOccurenciesInArr(arr, field, step) {
+  const inObjStat = getOccurencies(arr, field, step);
   return Object.entries(inObjStat).map((interval) => ({
     min: +interval[0],
     max: +interval[0] + step,

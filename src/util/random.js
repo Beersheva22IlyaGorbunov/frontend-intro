@@ -24,15 +24,13 @@ export function getRandomEmployee({
   const maxBirthYear = getBirthyearByAge(minAge);
   const gender = getRandomGender();
   return {
-    id: getRandomNumber(100000, 1000000),
     name: gender === "male" ? getRandomMaleName() : getRandomFemaleName(),
-    birthYear: getRandomNumber(minBirthYear, maxBirthYear),
+    birthYear: getRandomNumber(minBirthYear, maxBirthYear + 1),
     gender: gender,
     salary: getRandomNumber(minSalary, maxSalary),
     department: getRandomElement(departments),
     toString: function() {
-      return `id: ${this.id}, name: ${this.name}, birth year: ${this.birthYear}, 
-        gender: ${this.gender}, salary: ${this.salary}, department: ${this.department}`
+      return `id: ${this.id}, name: ${this.name}`
     }
   };
 }
@@ -68,5 +66,5 @@ export function getRandomFemaleName() {
 }
 
 export function getRandomGender() {
-  return getRandomNumber(0, 2) == 0 ? "male" : "female";
+  return getRandomElement(["male", "female"]);
 }
